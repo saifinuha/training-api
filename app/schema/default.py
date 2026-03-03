@@ -8,6 +8,10 @@ class DefaultResponse(BaseModel, Generic[T]):
     data: T | None
     meta: dict | None
 
+class CreatedResponse(BaseModel, Generic[T]):
+    success: bool
+    data: T | None
+
 class DefaultError(BaseModel):
     code: str
     message: str

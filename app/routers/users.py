@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends
 from app.deps.auth import require_token
 from app.errors import AppError
 from app.schema.user import UserOut, UserCreate
-from app.schema.default import DefaultResponse
+from app.schema.default import DefaultResponse, CreatedResponse
 
 router = APIRouter()
 
@@ -40,15 +40,15 @@ def get_user(user_id: int):
 def list_users():
     return {
         "success": True,
-        "data": [],
+        "data": _fake_db,
         "meta": {
             "page": 1,
             "page_size": 20,
-            "total_items": 0
+            "total_items": 2
         }
     }
 
-@router.post("/users")
+@router.post("/users", status_code=201, response_model=CreatedResponse[UserCreate])
 def create_user(user: UserCreate):
     return {
         "success": True,
