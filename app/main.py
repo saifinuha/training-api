@@ -1,13 +1,27 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, Depends
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
 from app.routers import users
 from app.errors import AppError
+from app.database import create_pool, close_pool, get_db
+from contextlib import asynccontextmanager
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup: Create connection pool
+    print("Starting up: Creating connection pool...")
+    create_pool()
+    yield
+    # Shutdown: Close connection pool
+    print("Shutting down: Closing connection pool...")
+    close_pool()
 
 app = FastAPI(
     title="Training API",
     version="1.0.0",
-    description="API interkoneksi data"
+    description="API interkoneksi data",
+    lifespan=lifespan
 )
 
 @app.exception_handler(AppError)
@@ -62,3 +76,14 @@ def root():
 @app.get("/health")
 def health_check():
     return {"status": "healthy"}
+
+@app.get("/health/db")
+def db_health_check(conn = Depends(get_db)):
+    try:
+        cursor = conn.cursor()
+        cursor.execute("SELECT 1 FROM DUAL")
+        result = cursor.fetchone()
+        cursor.close()
+        return {"status": "healthy", "database": "connected", "result": result[0]}
+    except Exception as e:
+        return {"status": "unhealthy", "error": str(e)}

@@ -12,11 +12,13 @@ class UserCreate(BaseModel):
         default="user",
         pattern="^(admin|user|lecturer)$"
     )
+
 class UserUpdate(BaseModel):
     """Schema untuk PATCH - semua field optional"""
     name: str | None = Field(None, min_length=1, max_length=100)
     email: EmailStr | None = None
     role: str | None = Field(None, pattern="^(admin|user|lecturer)$")
+
 class UserOut(BaseModel):
     """Schema untuk response user"""
     id: int
